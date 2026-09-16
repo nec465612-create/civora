@@ -603,12 +603,47 @@ class Civora(gl.contract.Contract):
 
                 # Footnotes: strictly bounded sorted list of dicts
                 footnotes = []
-                raw_footnotes = record.get("footnotes", [])
-                if isinstance(raw_footnotes, list):
-                    if len(raw_footnotes) > MAX_FOOTNOTES:
+                if "footnotes" not in record or not isinstance(record["footnotes"], list):
+                    return {
+                        "status": "UNRESOLVED",
+                        "reason": "BLS footnotes field is missing or malformed",
+                        "series_id": series,
+                        "year": year,
+                        "period": period,
+                        "raw_value": raw_val,
+                        "normalized_value_scaled": scaled_val,
+                        "period_name": period_name,
+                        "footnotes": [],
+                        "seasonal_band": seasonal_band,
+                        "catalog": {},
+                        "comparability": "UNKNOWN",
+                        "canonical_fingerprint": "0" * 64,
+                        "exact_url": observation_url,
+                    }
+                raw_footnotes = record["footnotes"]
+                if len(raw_footnotes) > MAX_FOOTNOTES:
+                    return {
+                        "status": "UNRESOLVED",
+                        "reason": f"Footnote count {len(raw_footnotes)} exceeds maximum {MAX_FOOTNOTES}",
+                        "series_id": series,
+                        "year": year,
+                        "period": period,
+                        "raw_value": raw_val,
+                        "normalized_value_scaled": scaled_val,
+                        "period_name": period_name,
+                        "footnotes": [],
+                        "seasonal_band": seasonal_band,
+                        "catalog": {},
+                        "comparability": "UNKNOWN",
+                        "canonical_fingerprint": "0" * 64,
+                        "exact_url": observation_url,
+                    }
+
+                for fn in raw_footnotes:
+                    if not isinstance(fn, dict):
                         return {
                             "status": "UNRESOLVED",
-                            "reason": f"Footnote count {len(raw_footnotes)} exceeds maximum {MAX_FOOTNOTES}",
+                            "reason": "BLS footnote item is malformed",
                             "series_id": series,
                             "year": year,
                             "period": period,
@@ -622,32 +657,50 @@ class Civora(gl.contract.Contract):
                             "canonical_fingerprint": "0" * 64,
                             "exact_url": observation_url,
                         }
-
-                    for fn in raw_footnotes:
-                        if isinstance(fn, dict):
-                            fn_code = str(fn.get("code", "")).strip()
-                            fn_text = str(fn.get("text", "")).strip()
-                            if len(fn_code) > MAX_FOOTNOTE_CODE_LEN or len(fn_text) > MAX_FOOTNOTE_TEXT_LEN:
-                                return {
-                                    "status": "UNRESOLVED",
-                                    "reason": "Footnote length exceeded bounds",
-                                    "series_id": series,
-                                    "year": year,
-                                    "period": period,
-                                    "raw_value": raw_val,
-                                    "normalized_value_scaled": scaled_val,
-                                    "period_name": period_name,
-                                    "footnotes": [],
-                                    "seasonal_band": seasonal_band,
-                                    "catalog": {},
-                                    "comparability": "UNKNOWN",
-                                    "canonical_fingerprint": "0" * 64,
-                                    "exact_url": observation_url,
-                                }
-                            footnotes.append({
-                                "code": fn_code,
-                                "text": fn_text,
-                            })
+                    if not fn:
+                        continue  # BLS uses {} to represent no footnote.
+                    if set(fn.keys()) != {"code", "text"} or not isinstance(fn["code"], str) or not isinstance(fn["text"], str):
+                        return {
+                            "status": "UNRESOLVED",
+                            "reason": "BLS footnote keys or values are malformed",
+                            "series_id": series,
+                            "year": year,
+                            "period": period,
+                            "raw_value": raw_val,
+                            "normalized_value_scaled": scaled_val,
+                            "period_name": period_name,
+                            "footnotes": [],
+                            "seasonal_band": seasonal_band,
+                            "catalog": {},
+                            "comparability": "UNKNOWN",
+                            "canonical_fingerprint": "0" * 64,
+                            "exact_url": observation_url,
+                        }
+                    fn_code = fn["code"].strip()
+                    fn_text = fn["text"].strip()
+                    if (
+                        not fn_code
+                        or not fn_text
+                        or len(fn_code) > MAX_FOOTNOTE_CODE_LEN
+                        or len(fn_text) > MAX_FOOTNOTE_TEXT_LEN
+                    ):
+                        return {
+                            "status": "UNRESOLVED",
+                            "reason": "Footnote content is empty or exceeded bounds",
+                            "series_id": series,
+                            "year": year,
+                            "period": period,
+                            "raw_value": raw_val,
+                            "normalized_value_scaled": scaled_val,
+                            "period_name": period_name,
+                            "footnotes": [],
+                            "seasonal_band": seasonal_band,
+                            "catalog": {},
+                            "comparability": "UNKNOWN",
+                            "canonical_fingerprint": "0" * 64,
+                            "exact_url": observation_url,
+                        }
+                    footnotes.append({"code": fn_code, "text": fn_text})
                 footnotes.sort(key=lambda x: (x["code"], x["text"]))
 
                 # Catalog metadata: strictly bounded allowlisted dict
@@ -702,8 +755,15 @@ class Civora(gl.contract.Contract):
                     metadata_text = metadata_text_override
                     if not metadata_text:
                         metadata_resp = gl.nondet.web.get(metadata_url, headers=BLS_REQUEST_HEADERS)
-                        if metadata_resp.status == 200 and metadata_resp.body:
-                            metadata_text = metadata_resp.body.decode("utf-8", errors="replace")
+                        if (
+                            metadata_resp.status == 200
+                            and isinstance(metadata_resp.body, bytes)
+                            and 0 < len(metadata_resp.body) <= MAX_METADATA_RESPONSE_LEN
+                        ):
+                            try:
+                                metadata_text = metadata_resp.body.decode("utf-8", errors="strict")
+                            except UnicodeDecodeError:
+                                metadata_text = ""
                     if metadata_text:
                         metadata_excerpt = _bounded_metadata_excerpt(metadata_text, series, seasonal_band)
                         if metadata_excerpt:

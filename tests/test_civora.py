@@ -589,6 +589,26 @@ def test_oversized_series_report_fails_safe_to_hold(direct_vm, direct_deploy, di
     assert json.loads(contract.get_trigger(trg_id))["state"] == "HOLD"
 
 
+@pytest.mark.parametrize(
+    "metadata_body",
+    [b"\xff", "é" * 70000],
+    ids=["invalid-utf8", "byte-oversize"],
+)
+def test_api_success_metadata_rejects_invalid_utf8_or_byte_oversize(
+    direct_vm, direct_deploy, direct_alice, metadata_body
+):
+    contract = deploy(direct_deploy, direct_alice)
+    trg_id = contract.create_trigger("nonce-bad-metadata", "CUSR0000SA0", "2024", "M05", "GE", "310.0")
+    contract.freeze_trigger(trg_id)
+
+    api_body = json.loads(read_fixture("bls_sa_2024_may_valid.json"))
+    del api_body["Results"]["series"][0]["catalog"]
+    mock_bls_web(direct_vm, json.dumps(api_body), metadata_body=metadata_body)
+
+    assert contract.observe_initial(trg_id) == "NOT_COMPARABLE"
+    assert json.loads(contract.get_trigger(trg_id))["state"] == "HOLD"
+
+
 def test_oversized_api_and_unavailable_fallback_fail_closed(direct_vm, direct_deploy, direct_alice):
     contract = deploy(direct_deploy, direct_alice)
     trg_id = contract.create_trigger("nonce-oversized-api", "CUSR0000SA0", "2024", "M05", "GE", "310.0")
@@ -935,6 +955,46 @@ def test_catalog_and_footnote_evidence_bounds(direct_vm, direct_deploy, direct_a
     outcome2 = contract.observe_initial(trg2)
     assert outcome2 == "UNRESOLVED"
     assert json.loads(contract.get_trigger(trg2))["state"] == "HOLD"
+
+
+@pytest.mark.parametrize(
+    "bad_footnotes",
+    [
+        pytest.param("MISSING", id="missing"),
+        pytest.param("P", id="string"),
+        pytest.param(None, id="null"),
+        pytest.param([{}, "bad"], id="mixed-item"),
+    ],
+)
+def test_malformed_api_footnotes_fail_closed(
+    direct_vm, direct_deploy, direct_alice, bad_footnotes
+):
+    contract = deploy(direct_deploy, direct_alice)
+    trg_id = contract.create_trigger("nonce-bad-footnotes", "CUSR0000SA0", "2024", "M05", "GE", "310.0")
+    contract.freeze_trigger(trg_id)
+
+    payload = json.loads(read_fixture("bls_sa_2024_may_valid.json"))
+    record = payload["Results"]["series"][0]["data"][0]
+    if bad_footnotes == "MISSING":
+        del record["footnotes"]
+    else:
+        record["footnotes"] = bad_footnotes
+    mock_bls_web(direct_vm, json.dumps(payload))
+
+    assert contract.observe_initial(trg_id) == "UNRESOLVED"
+    assert json.loads(contract.get_trigger(trg_id))["state"] == "HOLD"
+
+
+def test_empty_api_footnote_sentinel_normalizes_to_empty_list(direct_vm, direct_deploy, direct_alice):
+    contract = deploy(direct_deploy, direct_alice)
+    trg_id = contract.create_trigger("nonce-empty-footnote", "CUSR0000SA0", "2024", "M05", "GE", "310.0")
+    contract.freeze_trigger(trg_id)
+
+    payload = json.loads(read_fixture("bls_sa_2024_may_valid.json"))
+    payload["Results"]["series"][0]["data"][0]["footnotes"] = [{}]
+    mock_bls_web(direct_vm, json.dumps(payload))
+    assert contract.observe_initial(trg_id) == "UNCHANGED_ABOVE"
+    assert json.loads(contract.get_vintage(trg_id, 0))["footnotes"] == []
 
 
 def test_hold_recovery_to_active_without_false_revision(direct_vm, direct_deploy, direct_alice):
