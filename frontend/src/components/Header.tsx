@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { walletManager } from '../services/walletManager';
-import { ConnectedWallet } from '../types';
+import { WalletView } from '../types';
 
 interface HeaderProps {
   onOpenConnect: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenConnect }) => {
-  const [wallet, setWallet] = useState<ConnectedWallet | null>(walletManager.getActiveWallet());
+  const [view, setView] = useState<WalletView>(walletManager.selectWalletView());
 
   useEffect(() => {
-    const unsub = walletManager.subscribe(() => {
-      setWallet(walletManager.getActiveWallet());
+    const unsub = walletManager.subscribeWalletState(() => {
+      setView(walletManager.selectWalletView());
     });
     return unsub;
   }, []);
@@ -31,12 +31,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenConnect }) => {
           <span>Studio Next</span>
         </div>
 
-        {wallet ? (
+        {view.wallet ? (
           <div className="wallet-connected-info">
-            <span className="wallet-brand-tag">{wallet.brand}</span>
-            <span className="wallet-address" title={wallet.address}>
-              {wallet.address.substring(0, 6)}...{wallet.address.substring(wallet.address.length - 4)}
+            <span className="wallet-brand-tag">{view.wallet.brand}</span>
+            <span className="wallet-address" title={view.wallet.address}>
+              {view.wallet.address.substring(0, 6)}...{view.wallet.address.substring(view.wallet.address.length - 4)}
             </span>
+            {view.phase === 'WRONG_CHAIN' && (
+              <button type="button" className="btn btn-sm btn-warning" onClick={() => void walletManager.recoverChain()}>
+                Switch network
+              </button>
+            )}
             <button
               type="button"
               className="btn btn-sm btn-outline"

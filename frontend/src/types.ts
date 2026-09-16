@@ -128,6 +128,32 @@ export interface ConnectedWallet {
   provider: EIP1193Provider;
 }
 
+export type WalletPhase =
+  | 'DISCONNECTED'
+  | 'DISCOVERING'
+  | 'CHOOSER_OPEN'
+  | 'CONNECTING'
+  | 'CONNECTED'
+  | 'WRONG_CHAIN'
+  | 'ERROR';
+
+export interface WalletSessionState {
+  phase: WalletPhase;
+  detectedWallets: DetectedWallet[];
+  selectedWalletId: string | null;
+  activeWallet: ConnectedWallet | null;
+  error: string | null;
+}
+
+export interface WalletView {
+  phase: WalletPhase;
+  wallets: DetectedWallet[];
+  wallet: ConnectedWallet | null;
+  canWrite: boolean;
+  showConnect: boolean;
+  error: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Transaction Lifecycle Types
 // ---------------------------------------------------------------------------

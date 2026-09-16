@@ -25,9 +25,9 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    setWallets(walletManager.getDetectedWallets());
-    const unsub = walletManager.subscribe(() => {
-      setWallets(walletManager.getDetectedWallets());
+    setWallets(walletManager.selectWalletView().wallets);
+    const unsub = walletManager.subscribeWalletState(() => {
+      setWallets(walletManager.selectWalletView().wallets);
     });
     return unsub;
   }, []);
@@ -35,6 +35,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
   useEffect(() => {
     const appShell = document.querySelector('.app-shell-content');
     if (isOpen) {
+      walletManager.openChooser();
       if (appShell) {
         appShell.setAttribute('inert', '');
         appShell.setAttribute('aria-hidden', 'true');
@@ -46,6 +47,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
         firstBtn?.focus();
       }, 50);
     } else {
+      walletManager.closeChooser();
       if (appShell) {
         appShell.removeAttribute('inert');
         appShell.removeAttribute('aria-hidden');
@@ -135,9 +137,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
           </button>
         </div>
 
-        <p className="modal-description">
-          Connect your Web3 provider. This application supports MetaMask, OKX Wallet, and Rabby.
-        </p>
+        <p className="modal-description">Choose a detected wallet to continue.</p>
 
         {error && (
           <div className="alert alert-error" role="alert">
@@ -148,7 +148,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
         <div className="wallet-list">
           {wallets.length === 0 ? (
             <div className="empty-wallet-note">
-              <p>No supported wallet detected (MetaMask, OKX, or Rabby).</p>
+              <p>No supported wallet was detected.</p>
               <p className="subtle-note">Please install or unlock a supported browser extension and reload.</p>
             </div>
           ) : (
@@ -168,7 +168,6 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
                   height={32}
                 />
                 <span className="wallet-name">{wallet.name}</span>
-                {wallet.isFallback && <span className="badge badge-subtle">Fallback</span>}
               </button>
             ))
           )}

@@ -29,8 +29,15 @@ MAX_FOOTNOTES = 5
 MAX_FOOTNOTE_CODE_LEN = 16
 MAX_FOOTNOTE_TEXT_LEN = 256
 MAX_PROMPT_REASON_LEN = 300
+MAX_API_RESPONSE_LEN = 128000
 MAX_METADATA_RESPONSE_LEN = 128000
 MAX_METADATA_EXCERPT_LEN = 6000
+
+OBSERVATION_KEYS = {
+    "status", "reason", "series_id", "year", "period", "raw_value",
+    "normalized_value_scaled", "period_name", "footnotes", "seasonal_band",
+    "catalog", "comparability", "canonical_fingerprint", "exact_url",
+}
 
 CATALOG_ALLOWED_KEYS = {
     "series_title",
@@ -206,15 +213,36 @@ def _extract_series_page_record(metadata_text: str, year: str, period: str) -> d
     cells = re.findall(r'<TD\b[^>]*>(.*?)</TD>', row_match.group(1), flags=re.IGNORECASE | re.DOTALL)
     if len(cells) < 12:
         return {}
-    raw_value = html.unescape(re.sub(r'<[^>]+>', '', cells[month_index])).replace('\xa0', ' ').strip()
-    if not raw_value or raw_value in {'-', '-(X)'}:
+    cell_text = html.unescape(re.sub(r'<[^>]+>', '', cells[month_index])).replace('\xa0', ' ').strip()
+    value_match = re.fullmatch(r'([^()]+?)(?:\(([A-Za-z0-9]{1,16})\))?', cell_text)
+    if not value_match:
         return {}
+    raw_value = value_match.group(1).strip()
+    if not raw_value or raw_value == '-':
+        return {}
+
+    footnotes = []
+    footnote_code = value_match.group(2)
+    if footnote_code:
+        legend_pattern = (
+            r'(?:^|[>\s])'
+            + re.escape(footnote_code)
+            + r'\s*:\s*([^<\r\n]{1,256})'
+        )
+        legend_match = re.search(legend_pattern, metadata_text, flags=re.IGNORECASE)
+        if not legend_match:
+            return {}
+        footnote_text = html.unescape(legend_match.group(1)).replace('\xa0', ' ').strip()
+        if not footnote_text:
+            return {}
+        footnotes.append({"code": footnote_code, "text": footnote_text})
     return {
         "raw_value": raw_value,
         "period_name": (
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         )[month_index],
+        "footnotes": footnotes,
     }
 
 
@@ -429,23 +457,37 @@ class Civora(gl.contract.Contract):
                 resp = gl.nondet.web.get(url, headers=BLS_REQUEST_HEADERS)
                 api_failure_reason = ""
                 data = {}
-                if resp.status == 200 and resp.body:
+                if (
+                    resp.status == 200
+                    and isinstance(resp.body, bytes)
+                    and 0 < len(resp.body) <= MAX_API_RESPONSE_LEN
+                ):
                     try:
-                        data = json.loads(resp.body.decode("utf-8", errors="replace"))
+                        data = json.loads(resp.body.decode("utf-8", errors="strict"))
                     except Exception:
                         data = {}
                     if data.get("status") != "REQUEST_SUCCEEDED":
                         api_failure_reason = f"BLS response status is not REQUEST_SUCCEEDED: {data.get('status')}"
                 else:
-                    api_failure_reason = f"BLS API returned HTTP {resp.status} or empty body"
+                    api_failure_reason = (
+                        f"BLS API returned HTTP {resp.status}, empty/non-byte body, "
+                        f"or response above {MAX_API_RESPONSE_LEN} bytes"
+                    )
 
                 # The anonymous BLS API has a small daily quota. Its official
                 # series report already contains the same year/month table and
                 # is the smallest quota-free fallback when the API is deferred.
                 if data.get("status") != "REQUEST_SUCCEEDED":
                     fallback_resp = gl.nondet.web.get(metadata_url, headers=BLS_REQUEST_HEADERS)
-                    if fallback_resp.status == 200 and fallback_resp.body:
-                        fallback_text = fallback_resp.body.decode("utf-8", errors="replace")
+                    if (
+                        fallback_resp.status == 200
+                        and isinstance(fallback_resp.body, bytes)
+                        and 0 < len(fallback_resp.body) <= MAX_METADATA_RESPONSE_LEN
+                    ):
+                        try:
+                            fallback_text = fallback_resp.body.decode("utf-8", errors="strict")
+                        except UnicodeDecodeError:
+                            fallback_text = ""
                         if _bounded_metadata_excerpt(fallback_text, series, seasonal_band):
                             fallback_record = _extract_series_page_record(fallback_text, year, period)
                             if fallback_record:
@@ -461,7 +503,7 @@ class Civora(gl.contract.Contract):
                                                 "period": period,
                                                 "periodName": fallback_record["period_name"],
                                                 "value": fallback_record["raw_value"],
-                                                "footnotes": [],
+                                                "footnotes": fallback_record["footnotes"],
                                             }],
                                         }],
                                     },
@@ -806,11 +848,11 @@ Return JSON with exactly:
             if not isinstance(leader_result, gl.vm.Return):
                 return False
             leader = leader_result.calldata
-            if not isinstance(leader, dict):
+            if not isinstance(leader, dict) or set(leader.keys()) != OBSERVATION_KEYS:
                 return False
 
             validator = evaluate()
-            if not isinstance(validator, dict):
+            if not isinstance(validator, dict) or set(validator.keys()) != OBSERVATION_KEYS:
                 return False
 
             # Strict validator consensus over all consequential facts

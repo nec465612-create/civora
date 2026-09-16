@@ -4,15 +4,14 @@ Required only for a GenLayer-connected frontend. Studio deployment/testing does 
 
 ## Applicability
 
-RPC_BUDGET_REVISION: 3a2592674d72c28c36e44e3f89f835ef494d71d8
+RPC_BUDGET_REVISION: ea1eca35a8f70a7b1e00be6dd32d40879c4d8d8d
 OFFICIAL_DOCS_CHECKED: https://docs.genlayer.com/developers/networks
 FRONTEND_SCOPE: APPLICABLE
-
-Use APPLICABLE or NOT_APPLICABLE: <checked dependency-boundary reason>.
+APPLICABILITY_REASON: The public registry, trigger detail, wallet writes, transaction finality polling, and reload recovery all call Studio Next through the frontend GenLayer clients.
 
 ## FRONTEND RPC BUDGET MATRIX
 
-FRONTEND_MATRIX_STATUS: READY
+FRONTEND_MATRIX_STATUS: COMPLETE
 MULTI_CLIENT_JUSTIFICATION: NOT_REQUIRED
 
 Required before implementing or repairing any GenLayer-connected frontend, including read-only frontends.

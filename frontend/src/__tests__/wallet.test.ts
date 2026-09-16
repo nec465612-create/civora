@@ -100,7 +100,7 @@ describe('WalletManager (EIP-6963 Provider Gate, Chain Switch & Lifecycle)', () 
     expect(brands).not.toContain('Generic Wallet');
   });
 
-  it('deduplicates providers by both UUID and object reference', () => {
+  it('handles duplicate announcement by both UUID and object reference', () => {
     const mockProviderObj = { request: vi.fn() };
     const metaMaskProvider1: EIP6963ProviderDetail = {
       info: {
@@ -135,6 +135,9 @@ describe('WalletManager (EIP-6963 Provider Gate, Chain Switch & Lifecycle)', () 
 
     const mockRequest = vi.fn().mockImplementation(async ({ method, params }) => {
       if (method === 'eth_requestAccounts') {
+        return ['0x1234567890123456789012345678901234567890'];
+      }
+      if (method === 'eth_accounts') {
         return ['0x1234567890123456789012345678901234567890'];
       }
       if (method === 'eth_chainId') {
@@ -180,7 +183,7 @@ describe('WalletManager (EIP-6963 Provider Gate, Chain Switch & Lifecycle)', () 
 
     const mockProvider = {
       request: vi.fn().mockImplementation(async ({ method }) => {
-        if (method === 'eth_requestAccounts') return ['0x1111111111111111111111111111111111111111'];
+        if (method === 'eth_requestAccounts' || method === 'eth_accounts') return ['0x1111111111111111111111111111111111111111'];
         if (method === 'eth_chainId') return '0xf22d';
         return null;
       }),
@@ -201,5 +204,64 @@ describe('WalletManager (EIP-6963 Provider Gate, Chain Switch & Lifecycle)', () 
     expect(removeListenerMock).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
     expect(removeListenerMock).toHaveBeenCalledWith('chainChanged', expect.any(Function));
     expect(manager.getActiveWallet()).toBeNull();
+  });
+
+  it('accepts a late announcement while the chooser is open', () => {
+    manager.openChooser();
+    expect(manager.getWalletState().phase).toBe('CHOOSER_OPEN');
+    dispatchAnnouncement({
+      info: { uuid: 'late-rabby', name: 'Rabby', icon: 'icon', rdns: 'io.rabby' },
+      provider: { request: vi.fn() },
+    });
+    expect(manager.selectWalletView().wallets.map((wallet) => wallet.brand)).toEqual(['Rabby']);
+  });
+
+  it('binds the selected provider and enters WRONG_CHAIN on its chainChanged event', async () => {
+    const handlers: Record<string, (...args: unknown[]) => void> = {};
+    const selectedProvider = {
+      request: vi.fn(async ({ method }: { method: string }) => {
+        if (method === 'eth_requestAccounts' || method === 'eth_accounts') {
+          return ['0x2222222222222222222222222222222222222222'];
+        }
+        if (method === 'eth_chainId') return '0xf22d';
+        return null;
+      }),
+      on: vi.fn((event: string, callback: (...args: unknown[]) => void) => {
+        handlers[event] = callback;
+      }),
+      removeListener: vi.fn(),
+    };
+    dispatchAnnouncement({
+      info: { uuid: 'selected-provider', name: 'OKX Wallet', icon: 'icon', rdns: 'com.okx.wallet' },
+      provider: selectedProvider,
+    });
+    await manager.connectWallet(manager.getDetectedWallets()[0]);
+    expect(manager.getWalletState().activeWallet?.provider).toBe(selectedProvider);
+    expect(manager.selectWalletView().canWrite).toBe(true);
+
+    handlers.chainChanged('0x1');
+    expect(manager.getWalletState().phase).toBe('WRONG_CHAIN');
+    expect(manager.selectWalletView().canWrite).toBe(false);
+  });
+
+  it('starts DISCONNECTED after reload through a fresh manager', () => {
+    const reloaded = new WalletManager();
+    expect(reloaded.getWalletState().phase).toBe('DISCONNECTED');
+    expect(reloaded.selectWalletView().showConnect).toBe(true);
+    reloaded.destroy();
+  });
+
+  it('performs no automatic resubmit or repeated account request after rejection', async () => {
+    const request = vi.fn(async ({ method }: { method: string }) => {
+      if (method === 'eth_requestAccounts') throw Object.assign(new Error('Rejected'), { code: 4001 });
+      return null;
+    });
+    dispatchAnnouncement({
+      info: { uuid: 'reject-once', name: 'MetaMask', icon: 'icon', rdns: 'io.metamask' },
+      provider: { request },
+    });
+    await expect(manager.connectWallet(manager.getDetectedWallets()[0])).rejects.toThrow('Rejected');
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(manager.getWalletState().phase).toBe('ERROR');
   });
 });
