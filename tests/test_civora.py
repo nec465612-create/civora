@@ -332,6 +332,44 @@ def test_observe_initial_boundary_equality(direct_vm, direct_deploy, direct_alic
     assert trg["state"] == "CONFIRMED_ACTIVE"
 
 
+def test_validator_accepts_agreement_and_rejects_consequential_disagreement(
+    direct_vm, direct_deploy, direct_alice
+):
+    contract = deploy(direct_deploy, direct_alice)
+    trg_id = contract.create_trigger(
+        "nonce-validator", "CUSR0000SA0", "2024", "M05", "GE", "310.0"
+    )
+    contract.freeze_trigger(trg_id)
+
+    baseline = read_fixture("bls_sa_2024_may_valid.json")
+    mock_bls_web(direct_vm, baseline)
+    assert contract.observe_initial(trg_id) == "UNCHANGED_ABOVE"
+
+    mock_bls_web(direct_vm, baseline)
+    assert direct_vm.run_validator() is True
+
+    mock_bls_web(direct_vm, read_fixture("bls_sa_2024_may_revised_lower.json"))
+    assert direct_vm.run_validator() is False
+
+
+def test_malformed_model_output_fails_closed(direct_vm, direct_deploy, direct_alice):
+    contract = deploy(direct_deploy, direct_alice)
+    trg_id = contract.create_trigger(
+        "nonce-malformed-model", "CUSR0000SA0", "2024", "M05", "GE", "310.0"
+    )
+    contract.freeze_trigger(trg_id)
+
+    api_body = json.loads(read_fixture("bls_sa_2024_may_valid.json"))
+    del api_body["Results"]["series"][0]["catalog"]
+    mock_bls_web(direct_vm, json.dumps(api_body))
+    direct_vm._llm_mocks.clear()
+    direct_vm._llm_mocks_hit.clear()
+    direct_vm.mock_llm(r"(?s).*comparability.*", "not-json")
+
+    assert contract.observe_initial(trg_id) == "UNRESOLVED"
+    assert json.loads(contract.get_trigger(trg_id))["state"] == "HOLD"
+
+
 # ---------------------------------------------------------------------------
 # 6. Revalidation & Revision Lifecycle Tests
 # ---------------------------------------------------------------------------
