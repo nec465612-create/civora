@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "checkpoint": "POST_DEPLOY_TEST",
+  "candidateRevision": "36ec0100d26df6c38b643eccbb20246d2b2088f5",
+  "applicationSourceRevision": "2c8c4c334bc3ae3a285eacab98f5a93087138dc4",
+  "contractSource": {
+    "path": "contracts/civora.py",
+    "bytes": 56832,
+    "sha256": "6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646",
+    "deployedByteEqual": true
+  },
+  "network": {
+    "name": "studio-dev",
+    "chainId": 61997,
+    "rpc": "https://studio-dev.genlayer.com/api",
+    "explorer": "https://explorer-studio-dev.genlayer.com"
+  },
+  "contractAddress": "0x12c037C1F985c6f852bAbBc9F6ed6AfCd4342182",
+  "actor": {
+    "alias": "actor9",
+    "address": "0xD56647bBa764c1b673299baaEB356569a37961b8",
+    "role": "deployer_upgrader_policy_owner_e2e_actor"
+  },
+  "deployment": {
+    "operationId": "civora-deploy-36ec010",
+    "transactionHash": "0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1",
+    "lifecycle": "FINALIZED",
+    "semanticExecution": "FINISHED_WITH_RETURN",
+    "leaderExecution": "SUCCESS",
+    "consensus": "MAJORITY_AGREE",
+    "readback": {
+      "get_upgrader": "0xd56647bba764c1b673299baaeb356569a37961b8",
+      "get_trigger_count": 0
+    },
+    "result": "PASS"
+  },
+  "cases": [
+    {
+      "id": "LIVE-01",
+      "purpose": "replay-safe trigger creation",
+      "operationId": "civora-live01-create-36ec010",
+      "method": "create_trigger",
+      "arguments": ["civora-live-001", "CUSR0000SA0", "2024", "M05", "GE", "310.000"],
+      "transactionHash": "0x66933e45f08e6a4f9f6b8758d0efe37c293192b2a9c9b2a2a2ade993f713afbf",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0x66933e45f08e6a4f9f6b8758d0efe37c293192b2a9c9b2a2a2ade993f713afbf",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_RETURN",
+      "leaderExecution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "readback": {
+        "triggerCount": 1,
+        "ownerNonceTrigger": "trg-0001",
+        "state": "DRAFT",
+        "thresholdScaled": 310000
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "LIVE-02",
+      "purpose": "specification lock",
+      "operationId": "civora-live02-freeze-36ec010",
+      "method": "freeze_trigger",
+      "arguments": ["trg-0001"],
+      "transactionHash": "0x945883072b3b94a049ca2adadfda402ac0ccf43e5971146fc2f7372028a4c5da",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0x945883072b3b94a049ca2adadfda402ac0ccf43e5971146fc2f7372028a4c5da",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_RETURN",
+      "leaderExecution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "readback": {
+        "state": "FROZEN",
+        "series": "CUSR0000SA0",
+        "year": "2024",
+        "period": "M05",
+        "operator": "GE",
+        "thresholdScaled": 310000
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "LIVE-03",
+      "purpose": "live BLS nondeterminism and validator consensus",
+      "operationId": "civora-live03-observe-36ec010",
+      "method": "observe_initial",
+      "arguments": ["trg-0001"],
+      "transactionHash": "0xfe23143a798b55530685cb9efcc7c99937d65fb10ab44e94ee0a4a909bc4a3bd",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0xfe23143a798b55530685cb9efcc7c99937d65fb10ab44e94ee0a4a909bc4a3bd",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_RETURN",
+      "leaderExecution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "readback": {
+        "state": "CONFIRMED_ACTIVE",
+        "outcome": "UNCHANGED_ABOVE",
+        "rawValue": "313.175",
+        "valueScaled": 313175,
+        "canonicalFingerprint": "47391003df90802647651361ce12df900aab2a7097e537bf3abb150f93333bd4",
+        "comparability": "COMPARABLE",
+        "sourceStatus": "REQUEST_SUCCEEDED",
+        "vintageCount": 1
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "LIVE-04",
+      "purpose": "unchanged live revalidation without duplicate vintage",
+      "operationId": "civora-live04-revalidate-36ec010",
+      "method": "revalidate_trigger",
+      "arguments": ["trg-0001"],
+      "transactionHash": "0x6ed05a8754cc7ad6f709dcbbae33748ee3821ac3d5bc5bce091254a62d87e2da",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0x6ed05a8754cc7ad6f709dcbbae33748ee3821ac3d5bc5bce091254a62d87e2da",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_RETURN",
+      "leaderExecution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "preReadback": {
+        "state": "CONFIRMED_ACTIVE",
+        "rawValue": "313.175",
+        "canonicalFingerprint": "47391003df90802647651361ce12df900aab2a7097e537bf3abb150f93333bd4",
+        "vintageCount": 1,
+        "latestObservedAt": "2026-09-16T14:45:43.664450+00:00"
+      },
+      "postReadback": {
+        "state": "CONFIRMED_ACTIVE",
+        "rawValue": "313.175",
+        "canonicalFingerprint": "47391003df90802647651361ce12df900aab2a7097e537bf3abb150f93333bd4",
+        "vintageCount": 1,
+        "latestObservedAt": "2026-09-16T14:48:25.366700+00:00",
+        "timestampRefreshed": true,
+        "duplicateVintageCreated": false
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "LIVE-05",
+      "purpose": "consumer namespace binding",
+      "operationId": "civora-live05-bind-36ec010",
+      "method": "bind_consumer",
+      "arguments": ["civora-demo", "trg-0001"],
+      "transactionHash": "0x1caa3d9dac51d7d98144710a8e5f70a4fb182acc9f34a3df87838e614383ea76",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0x1caa3d9dac51d7d98144710a8e5f70a4fb182acc9f34a3df87838e614383ea76",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_RETURN",
+      "leaderExecution": "SUCCESS",
+      "consensus": "MAJORITY_AGREE",
+      "readback": {
+        "consumer": "0xD56647bBa764c1b673299baaEB356569a37961b8",
+        "namespace": "civora-demo",
+        "triggerId": "trg-0001"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "LIVE-06",
+      "purpose": "duplicate nonce replay rejection and unchanged state",
+      "operationId": "civora-live06-replay-reject-36ec010",
+      "method": "create_trigger",
+      "arguments": ["civora-live-001", "CUSR0000SA0", "2024", "M05", "GE", "310.000"],
+      "transactionHash": "0xfe063994e761a1fc16296da5b346d3fb69d9f09d34e625dc3e5b863b7c02122f",
+      "explorerUrl": "https://explorer-studio-dev.genlayer.com/tx/0xfe063994e761a1fc16296da5b346d3fb69d9f09d34e625dc3e5b863b7c02122f",
+      "lifecycle": "FINALIZED",
+      "semanticExecution": "FINISHED_WITH_ERROR",
+      "consensus": "MAJORITY_AGREE",
+      "expectedError": "Trigger already created with this owner and client nonce",
+      "readback": {
+        "triggerCount": 1,
+        "ownerNonceTrigger": "trg-0001",
+        "state": "CONFIRMED_ACTIVE",
+        "vintageCount": 1,
+        "stateUnchanged": true
+      },
+      "result": "PASS_EXPECTED_REJECTION"
+    }
+  ],
+  "finalReadback": {
+    "triggerId": "trg-0001",
+    "state": "CONFIRMED_ACTIVE",
+    "effectiveState": "CONFIRMED_ACTIVE",
+    "isEffectiveActive": true,
+    "latestRawValue": "313.175",
+    "latestValueScaled": 313175,
+    "latestFingerprint": "47391003df90802647651361ce12df900aab2a7097e537bf3abb150f93333bd4",
+    "vintageCount": 1,
+    "triggerCount": 1,
+    "consumerBinding": "trg-0001"
+  },
+  "attemptedCases": 6,
+  "passedCases": 6,
+  "failedCases": 0,
+  "result": "PASS"
+}

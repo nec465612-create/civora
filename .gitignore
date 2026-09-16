@@ -1,10 +1,11 @@
 frontend/node_modules/
 frontend/dist/
 frontend/.vercel/
+.venv/
+artifacts/
 **/__pycache__/
 .pytest_cache/
 .env
 .env.*
 !.env.example
 docs/preflight/
-

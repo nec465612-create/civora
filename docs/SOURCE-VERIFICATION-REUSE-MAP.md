@@ -1,6 +1,6 @@
 # Source Verification Reuse Map
 
-This is the revision-bound Stage 2 inheritance and Build implementation map for Civora's BLS source-verification path. It preserves the approved baseline behavior while replacing network/runtime identity only. Application source revision: `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; contract SHA-256: `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646` (56,832 bytes).
+This map identifies the implementation and regression coverage for Civora's BLS source-verification path. Application source revision: `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; deployed contract SHA-256: `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646` (56,832 bytes). [Studio transaction and readback evidence](VERIFICATION.md) is separate from local tests.
 
 ## Source feasibility record
 
@@ -38,7 +38,7 @@ validated allowlisted series/year/period
 
 | Required pattern | Reused structure / source-specific replacement | Implemented source path/symbol | Regression test path/name | Verification result/evidence | Status |
 |---|---|---|---|---|---|
-| Exact identity or point-in-time retrieval | Direct exact BLS series/year endpoint; monthly period is selected uniquely; immutable vintages preserve each retrieval | `contracts/civora.py::_bls_url`, `_execute_bls_observation` | `tests/test_civora.py::test_missing_period_causes_hold`; `test_duplicate_period_causes_hold`; `test_wrong_series_id_causes_hold` | Canonical contract suite: 54 passed; live proof reserved for Studio E2E | VERIFIED |
+| Exact identity or point-in-time retrieval | Direct exact BLS series/year endpoint; monthly period is selected uniquely; immutable vintages preserve each retrieval | `contracts/civora.py::_bls_url`, `_execute_bls_observation` | `tests/test_civora.py::test_missing_period_causes_hold`; `test_duplicate_period_causes_hold`; `test_wrong_series_id_causes_hold` | Contract suite: 54 passed; Studio LIVE-03/04 in [verification](VERIFICATION.md) | VERIFIED |
 | Index-to-document provenance | No fuzzy index is used. Strict user inputs construct the exact canonical series resource, then series ID and row cardinality are checked | `ALLOWLISTED_SERIES`, `_validate_series`, `_execute_bls_observation` | `test_series_allowlist`; `test_wrong_series_id_causes_hold`; `test_duplicate_period_causes_hold` | 54-test suite passed; arbitrary URLs/IDs cannot enter the source set | VERIFIED |
 | Host/path allowlist and bounded response | URLs are internally built for exact BLS API/report paths; API and report bodies have 128,000-byte acceptance limits | `_bls_url`, `_bls_metadata_url`, `MAX_API_RESPONSE_LEN`, `MAX_METADATA_RESPONSE_LEN` | `test_oversized_series_report_fails_safe_to_hold`; `test_oversized_api_and_unavailable_fallback_fail_closed`; `test_series_allowlist` | 54-test suite passed; no user-supplied URL; oversize fails closed | VERIFIED |
 | HTTP/schema/document validation | Require HTTP 200, non-empty bounded bytes, strict UTF-8/JSON, success status, exact series and one row; API footnotes require a list of exact bounded objects, with `{}` as the sole no-footnote sentinel | `_execute_bls_observation`, `_extract_series_page_record` | `test_rate_limit_429_causes_hold`; `test_bls_api_status_failure`; `test_malformed_decimal_causes_hold`; `test_series_page_fallback_rejects_unresolved_footnote_marker`; `test_api_success_metadata_rejects_invalid_utf8_or_byte_oversize`; `test_malformed_api_footnotes_fail_closed`; `test_empty_api_footnote_sentinel_normalizes_to_empty_list` | 54-test suite passed; invalid bytes/UTF-8/footnote evidence returns `UNRESOLVED`/HOLD | VERIFIED |
@@ -48,7 +48,7 @@ validated allowlisted series/year/period
 | Independent refetch and substantive equality | Validator reruns the full retrieval/evaluation and compares every consequential field | `_execute_bls_observation.evaluate`, `.validate`, `gl.vm.run_nondet` | `test_validator_accepts_agreement_and_rejects_consequential_disagreement` | 54-test suite passed; disagreement cannot authorize state | VERIFIED |
 | Fail-closed state transition | Source/model/consensus uncertainty records HOLD and never active/inactive confirmation | `observe_initial`, `revalidate_trigger` | `test_transport_failure_causes_hold_never_false_reversal`; `test_unknown_comparability_causes_hold`; `test_material_definition_change_causes_hold` | 54-test suite passed; no conclusive consequence from unresolved evidence | VERIFIED |
 | Bounded retry/cooldown and duplicate prevention | No automatic contract retry exists. Each retry is an explicit signed action; five-vintage cap, nonce/canonical-key guards, unchanged-fingerprint dedupe, and frontend single-flight journal bound repetition | `MAX_VINTAGES`, `create_trigger`, `revalidate_trigger`; `frontend/src/services/writeManager.ts` | `test_owner_nonce_replay_rejected`; `test_active_canonical_duplicate_rejected`; `test_max_triggers_cap`; frontend write/recovery tests | Contract 54/54 and frontend 50/50 passed; one wallet submission per intent; unchanged evidence does not append a vintage | VERIFIED |
-| Finality, semantic success and authoritative readback | Frontend classifies GenLayer transaction finality/execution then performs method-specific reads before journal release | `frontend/src/services/writeManager.ts`, `readClient.ts` | `frontend/src/__tests__/writeManager.test.ts`; `readClient.test.ts` | Frontend 50/50, typecheck and production build passed; live evidence reserved for Studio/Vercel gates | VERIFIED |
+| Finality, semantic success and authoritative readback | Frontend classifies GenLayer transaction finality/execution then performs method-specific reads before journal release | `frontend/src/services/writeManager.ts`, `frontend/src/services/rpcClient.ts` | `frontend/src/__tests__/write.test.ts`; `frontend/src/__tests__/rpc.test.ts` | Frontend 50/50, typecheck and production build passed; Studio write semantics are recorded in [verification](VERIFICATION.md), while browser-wallet E2E remains pending | VERIFIED |
 
 ## Source-verification pattern deviations
 
@@ -58,7 +58,7 @@ validated allowlisted series/year/period
 - Verified incompatibility: the approved BLS workflow starts from one strict allowlisted series ID and a validated year/month; the official API URL is already the exact canonical series resource and no discovery index participates.
 - Equal-or-stronger replacement: construct the URL internally, reject non-allowlisted series, require the returned series ID to match, and require exactly one matching year/month row.
 - Affected tests: series allowlist, wrong series, missing period, and duplicate period regressions listed above.
-- Reviewer acceptance: pending the exact `PRE_DEPLOY` verdict for this revision.
+- Verification: contract tests cover exact identity/cardinality, and Studio LIVE-03/04 demonstrate live official-source observation and unchanged revalidation.
 
 ### No version-addressed BLS snapshot
 
@@ -66,6 +66,6 @@ validated allowlisted series/year/period
 - Verified incompatibility: these public BLS endpoints expose the current official historical row, not immutable prior releases at versioned URLs.
 - Equal-or-stronger replacement within product scope: every successful retrieval is fingerprinted and stored as an immutable on-chain vintage; subsequent retrievals deterministically classify unchanged or revised evidence and preserve both states.
 - Affected tests: unchanged refresh, revised-above, revised-below, activated-by-revision, HOLD recovery, and canonical fingerprint regressions.
-- Reviewer acceptance: pending the exact `PRE_DEPLOY` verdict for this revision.
+- Verification: contract revision/HOLD regressions cover the state transitions; Studio LIVE-03/04 show a stored first vintage and an unchanged revalidation without a duplicate vintage.
 
 No other structural deviation is claimed.
