@@ -146,4 +146,17 @@ describe('ABI Alignment & Prohibited Claims Scanner', () => {
     expect(app).toContain('<TxStatusBar onReconciled={handleReconciled} />');
     expect(app).toContain('key={`${selectedTriggerId}-${refreshCounter}`}');
   });
+
+  it('keeps the public layer judge-readable without wallet or debug telemetry', () => {
+    const landing = fs.readFileSync(path.resolve(process.cwd(), 'src/components/LandingPage.tsx'), 'utf-8');
+    const header = fs.readFileSync(path.resolve(process.cwd(), 'src/components/Header.tsx'), 'utf-8');
+    for (const required of [
+      'GenLayer validators', 'Official BLS only', 'Studio Next', 'Chain 61997',
+      'Auditable vintages', 'fails closed to HOLD', 'no legal rights',
+    ]) {
+      expect(landing).toContain(required);
+    }
+    expect(landing).not.toContain('Connect Wallet');
+    expect(header).not.toMatch(/Calls:|Cached:|429s:|RPC Budget/);
+  });
 });
