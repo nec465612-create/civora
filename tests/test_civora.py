@@ -734,7 +734,6 @@ def test_series_page_fallback_preserves_unchanged_fingerprint(direct_vm, direct_
     api_body = json.loads(read_fixture("bls_sa_2024_may_valid.json"))
     api_body["Results"]["series"][0]["data"][0]["value"] = "313.175"
     api_body["Results"]["series"][0]["data"][0]["footnotes"] = []
-    del api_body["Results"]["series"][0]["catalog"]
     mock_bls_web(
         direct_vm,
         json.dumps(api_body),

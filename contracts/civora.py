@@ -849,9 +849,10 @@ Return JSON with exactly:
                             comparability = "UNKNOWN"
                             comp_reason = "Model did not return structured comparability assessment"
 
-                # Canonical fingerprint over all non-volatile consequence fields
+                # Fingerprint source-stable row evidence only. Catalog metadata
+                # still gates comparability above, but differs across equivalent
+                # official API/page transports and must not create a false revision.
                 canonical_evidence = {
-                    "catalog": catalog,
                     "exact_series_id": series,
                     "footnotes": footnotes,
                     "normalized_value_scaled": scaled_val,

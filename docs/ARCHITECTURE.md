@@ -8,7 +8,7 @@ Civora verifies two allowlisted BLS CPI series for a fixed year and monthly peri
 
 The `Civora` Intelligent Contract exposes 17 public methods: seven writes and ten views. Trigger specifications, owner nonces, active canonical keys, consumer bindings, and up to five observation vintages are stored on-chain. Owner checks, replay-safe nonces, allowlists, decimal bounds, metadata bounds, and state-transition guards are enforced before mutation.
 
-Official web evidence and model-assisted metadata comparison execute inside a GenLayer nondeterministic block. The validator reruns the observation and accepts only exact agreement across every consequential field. Canonical fingerprints exclude volatile transport details while binding the value, period, source identity, metadata, and footnotes.
+Official web evidence and model-assisted metadata comparison execute inside a GenLayer nondeterministic block. The validator reruns the observation and accepts only exact agreement across every consequential field. Canonical fingerprints exclude transport-varying metadata while binding the value, period, source identity, and footnotes; bounded catalog metadata separately gates comparability and fail-closed HOLD behavior.
 
 ## Frontend
 
