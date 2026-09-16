@@ -4,7 +4,7 @@ Required only for a GenLayer-connected frontend. Studio deployment/testing does 
 
 ## Applicability
 
-RPC_BUDGET_REVISION: c522a5ee810aa339d9dff352f951bbd285837a95
+RPC_BUDGET_REVISION: 468f3f266387979bb2bdeb3e5094766199d2309c
 RPC_BUDGET_REVISION_KIND: APPLICATION_SOURCE
 OFFICIAL_DOCS_CHECKED: https://docs.genlayer.com/developers/networks
 FRONTEND_SCOPE: APPLICABLE

@@ -1,6 +1,6 @@
 # Source Verification Reuse Map
 
-This is the revision-bound Stage 2 inheritance and Build implementation map for Civora's BLS source-verification path. It preserves the approved baseline behavior while replacing network/runtime identity only. Application source revision: `c522a5ee810aa339d9dff352f951bbd285837a95`; contract SHA-256: `B8020A2CAC0A428DA3EFCA2A3716794D51879879A3BA20F0D65E05931AEFC600` (53,884 bytes).
+This is the revision-bound Stage 2 inheritance and Build implementation map for Civora's BLS source-verification path. It preserves the approved baseline behavior while replacing network/runtime identity only. Application source revision: `468f3f266387979bb2bdeb3e5094766199d2309c`; contract SHA-256: `34244EE71EBB9225A1FA59F45D0637CCBBC6D42C52E3B47DD6112E95A768D989` (56,707 bytes).
 
 ## Source feasibility record
 
