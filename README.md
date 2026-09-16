@@ -51,7 +51,7 @@ At the reviewed source revision, contract tests passed 54/54, GenVM lint/schema 
 
 ## Deployment, recovery, and limitations
 
-Studio Dev uses RPC `https://studio-dev.genlayer.com/api` and chain ID `61997`. The deployed 56,832-byte contract was read back byte-equal to `contracts/civora.py` with SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`. The upgrader is the recorded deployer; if that authority is lost, an upgrade cannot be claimed. A Studio chain reset requires redeployment and renewed live verification. See [verification](docs/VERIFICATION.md).
+Studio Dev uses RPC `https://studio-dev.genlayer.com/api` and chain ID `61997`. The deployed 56,832-byte contract was read back byte-equal to the public Git source at commit `4c31319`, with SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`. The upgrader is the recorded deployer; if that authority is lost, an upgrade cannot be claimed. A Studio chain reset requires redeployment and renewed live verification. See [verification](docs/VERIFICATION.md).
 
 The contract is limited to two BLS CPI series, monthly periods, five vintages per trigger, and the Studio Dev network. Studio Dev is a testing environment. The public Vercel release and its wallet/RPC E2E measurements are pending and are not represented by the Studio result.
 

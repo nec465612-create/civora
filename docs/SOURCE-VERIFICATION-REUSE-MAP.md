@@ -1,6 +1,6 @@
 # Source Verification Reuse Map
 
-This map identifies the implementation and regression coverage for Civora's BLS source-verification path. Application source revision: `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; deployed contract SHA-256: `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646` (56,832 bytes). [Studio transaction and readback evidence](VERIFICATION.md) is separate from local tests.
+This map identifies the implementation and regression coverage for Civora's BLS source-verification path. Application working-tree revision: `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; first byte-exact public-source commit: `4c31319`; deployed contract SHA-256: `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646` (56,832 bytes). [Studio transaction and readback evidence](VERIFICATION.md) is separate from local tests.
 
 ## Source feasibility record
 

@@ -1,13 +1,13 @@
 # Civora verification
 
-This document binds the deployed Studio Dev contract to its source and records the live proof available before the public website release. The release commit will be identified by GitHub after publication; the deployed application source commit is `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`, and the reviewed pre-public evidence commit is `36ec0100d26df6c38b643eccbb20246d2b2088f5`.
+This document binds the deployed Studio Dev contract to its source and records the live proof available before the public website release. The deployed application was built from the working tree at `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; the reviewed pre-public evidence commit is `36ec0100d26df6c38b643eccbb20246d2b2088f5`. The first Git commit preserving the deployed contract's exact bytes is [`4c31319`](https://github.com/nec465612-create/civora/commit/4c31319): earlier Git blobs normalized two CRLF endings. This is a Git representation correction, not a contract logic change or redeployment.
 
 ## Deployment and source parity
 
 - Chain: GenLayer Studio Dev, `61997`; RPC: `https://studio-dev.genlayer.com/api`.
 - Contract: `0x12c037C1F985c6f852bAbBc9F6ed6AfCd4342182`.
 - [Deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1): `FINALIZED`, `FINISHED_WITH_RETURN`, leader `SUCCESS`, `MAJORITY_AGREE` (3 agree, 2 idle).
-- `gen_getContractCode` returned 56,832 bytes, byte-equal to `contracts/civora.py`; SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`.
+- `gen_getContractCode` returned 56,832 bytes, byte-equal to `contracts/civora.py` in the working tree and the Git blob at `4c31319`; SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`. `.gitattributes` disables text normalization for this one contract file; the public raw file must retain the same size and hash.
 - Deployer/upgrader: `0xD56647bBa764c1b673299baaEB356569a37961b8`; initial `get_upgrader` matched and `get_trigger_count` returned `0`. Constructor/linked-contract configuration: no linked contracts; the upgrader is the deployed actor.
 
 ## Live write-path evidence
