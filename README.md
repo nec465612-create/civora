@@ -2,7 +2,7 @@
 
 Civora verifies official U.S. consumer-price statistics before a public-policy simulation treats a statistical trigger as active. A GenLayer Intelligent Contract independently retrieves bounded Bureau of Labor Statistics (BLS) evidence, reaches validator consensus, records comparable vintages, and moves to `HOLD` rather than inventing an answer when evidence cannot be verified.
 
-The contract is deployed on [GenLayer Studio Dev](https://explorer-studio-dev.genlayer.com). See the [deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1) and [live verification matrix](docs/VERIFICATION.md). The public website URL will be added after its separate Vercel deployment and end-to-end test; no production-web claim is made here yet.
+The contract is deployed on [GenLayer Studio Dev](https://explorer-studio-dev.genlayer.com). See the [deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1), [live verification matrix](docs/VERIFICATION.md), and [Civora web app](https://civora-gules.vercel.app). The production deployment is live; browser-wallet E2E remains a separately recorded release gate.
 
 ## The trust problem
 
@@ -53,6 +53,6 @@ At the reviewed source revision, contract tests passed 54/54, GenVM lint/schema 
 
 Studio Dev uses RPC `https://studio-dev.genlayer.com/api` and chain ID `61997`. The deployed 56,832-byte contract was read back byte-equal to the public Git source at commit `4c31319`, with SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`. The upgrader is the recorded deployer; if that authority is lost, an upgrade cannot be claimed. A Studio chain reset requires redeployment and renewed live verification. See [verification](docs/VERIFICATION.md).
 
-The contract is limited to two BLS CPI series, monthly periods, five vintages per trigger, and the Studio Dev network. Studio Dev is a testing environment. The public Vercel release and its wallet/RPC E2E measurements are pending and are not represented by the Studio result.
+The contract is limited to two BLS CPI series, monthly periods, five vintages per trigger, and the Studio Dev network. Studio Dev is a testing environment. The public Vercel deployment is available, but its wallet/RPC E2E measurements remain pending and are not represented by the Studio result.
 
 No private key belongs in this repository or the browser app. The frontend's RPC and contract address are public configuration; write authority comes only from the selected user's wallet. Source content is untrusted input to validators, and malformed, ambiguous, or unavailable evidence fails closed.
