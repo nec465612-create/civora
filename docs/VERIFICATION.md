@@ -1,6 +1,6 @@
 # Civora verification
 
-This document binds the deployed Studio Dev contract to its source and records the live proof available before the public website release. The deployed application was built from the working tree at `2c8c4c334bc3ae3a285eacab98f5a93087138dc4`; the reviewed pre-public evidence commit is `36ec0100d26df6c38b643eccbb20246d2b2088f5`. The first Git commit preserving the deployed contract's exact bytes is [`4c31319`](https://github.com/nec465612-create/civora/commit/4c31319): earlier Git blobs normalized two CRLF endings. This is a Git representation correction, not a contract logic change or redeployment.
+This document binds the deployed Studio Dev contract to its source and records the live contract and browser-wallet results. The first Git commit preserving the deployed contract's exact bytes is [`4c31319`](https://github.com/nec465612-create/civora/commit/4c31319). The contract has not been redeployed since that source verification.
 
 ## Deployment and source parity
 
@@ -12,7 +12,7 @@ This document binds the deployed Studio Dev contract to its source and records t
 
 ## Live write-path evidence
 
-All positive writes below finalized with semantic `FINISHED_WITH_RETURN`, leader `SUCCESS`, `MAJORITY_AGREE`, and the stated authoritative readback. The replay row is an expected semantic error, not a successful write. [Full secret-free evidence ledger](evidence/studio-e2e-36ec010.json) includes exact arguments and pre/post values.
+All positive writes below finalized with semantic `FINISHED_WITH_RETURN`, leader `SUCCESS`, `MAJORITY_AGREE`, and the stated authoritative readback. The replay row is an expected semantic error, not a successful write.
 
 | Case | Transaction | Authoritative consequence |
 | --- | --- | --- |
@@ -45,7 +45,17 @@ At the reviewed source: contract tests `54/54`; lint/schema and exact 17-method 
 
 ## External-wallet Vercel E2E
 
-The [Chrome/OKX E2E ledger](evidence/vercel-e2e-4458a1f.json) records the production application revision `4458a1f5e2b16813255007c5c3f58dac984149d9`, deployment `dpl_7ujUhmGzCZqw9KhyBtEs3o2UNXXV`, all five browser-wallet transaction hashes, case results VE-01–VE-07, and direct contract readbacks. All five transactions independently returned `FINALIZED`, `FINISHED_WITH_RETURN`, leader `SUCCESS` and `MAJORITY_AGREE`. The created `trg-0002` has one comparable vintage; unchanged revalidation advanced the observation timestamp without appending another. Consumer binding `civora-vercel` resolves to `trg-0002` when queried with the sender's checksum-cased address. The final binding hash was recovered to browser `SUCCESS` after the frontend address-case fix, without resubmission.
+The production application at [civora-gules.vercel.app](https://civora-gules.vercel.app) was exercised with an external OKX wallet. The public landing, registry, detail view, wallet selection and five write actions were tested. Reload after trigger creation recovered the saved transaction hash without duplicate submission. All five writes independently returned `FINALIZED`, `FINISHED_WITH_RETURN`, leader `SUCCESS` and `MAJORITY_AGREE`:
+
+| Browser-wallet action | Transaction | Contract readback |
+| --- | --- | --- |
+| Create | [View transaction](https://explorer-studio-dev.genlayer.com/tx/0x780ca11038918e734ca9e05fde7ba6103efd22e524612f19660348ff2d96053c) | `trg-0002` created in `DRAFT`. |
+| Freeze | [View transaction](https://explorer-studio-dev.genlayer.com/tx/0xc7809b7fcd3b40454402a7e9c107836b9b4cf51836c80b9dc8312b1b2cf1a7c9) | Specification frozen. |
+| Initial observation | [View transaction](https://explorer-studio-dev.genlayer.com/tx/0xcc572de00a854d54753adb93230f2847c75b02543721f6586143acd436cc0879) | `CONFIRMED_INACTIVE`; one vintage. |
+| Revalidation | [View transaction](https://explorer-studio-dev.genlayer.com/tx/0x946e34921846b445a030dc8ea1a82219ae9f615e2dffb92086cb9d535c51d433) | Same value and fingerprint; observation time advanced; still one vintage. |
+| Consumer binding | [View transaction](https://explorer-studio-dev.genlayer.com/tx/0x512f944530c0c8ac6ed54652616a901bf5e52199e910bf8ca93169102b994e78) | Namespace `civora-vercel` resolves to `trg-0002`. |
+
+The final authoritative trigger readback gave value `313.044`, state `CONFIRMED_INACTIVE`, one comparable vintage, and fingerprint `8be910f83eafa1bda92edb9563d3aab0e083670a027e643d6fe9083d967a404f`. The browser recovered the binding transaction to `SUCCESS` from its saved hash without resubmission.
 
 ## Recovery and limitations
 

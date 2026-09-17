@@ -12,7 +12,7 @@
 | Contract dependency | `py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng` |
 | Contract | `0x12c037C1F985c6f852bAbBc9F6ed6AfCd4342182` |
 | Deployment transaction | [`0x931797…e8e1`](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1) |
-| Deployed source commit | `2c8c4c334bc3ae3a285eacab98f5a93087138dc4` |
+| Byte-exact public contract source | [`4c31319`](https://github.com/nec465612-create/civora/commit/4c31319) |
 | Source SHA-256 | `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646` |
 
 Studio Next is configured explicitly. The application does not select stable `studionet` and override its RPC or consensus addresses.

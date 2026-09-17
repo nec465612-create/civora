@@ -2,7 +2,7 @@
 
 Civora verifies official U.S. consumer-price statistics before a public-policy simulation treats a statistical trigger as active. A GenLayer Intelligent Contract independently retrieves bounded Bureau of Labor Statistics (BLS) evidence, reaches validator consensus, records comparable vintages, and moves to `HOLD` rather than inventing an answer when evidence cannot be verified.
 
-The contract is deployed on [GenLayer Studio Dev](https://explorer-studio-dev.genlayer.com). See the [deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1), [live verification matrix](docs/VERIFICATION.md), and [Civora web app](https://civora-gules.vercel.app). The production deployment is live; browser-wallet E2E remains a separately recorded release gate.
+The contract is deployed on [GenLayer Studio Dev](https://explorer-studio-dev.genlayer.com). See the [deployment transaction](https://explorer-studio-dev.genlayer.com/tx/0x931797897c9665c6dee1799a962b2b84089bc7a4ee9a5f85b95b3c644962e8e1), [live verification matrix](docs/VERIFICATION.md), and [Civora web app](https://civora-gules.vercel.app). The production browser-wallet lifecycle is documented in the verification matrix.
 
 ## The trust problem
 
@@ -24,7 +24,7 @@ The contract's nondeterministic block retrieves official web evidence and perfor
 
 `contracts/civora.py` is the deployed 17-method Intelligent Contract. It stores trigger specifications, owner nonces, active canonical keys, consumer bindings, and up to five vintages. The owner controls create/freeze/close; observation and revalidation are permissionless; consumers bind their own namespaces. BLS is the external source of statistical facts, while the contract is the authoritative source of trigger state and vintage history. Canonical fingerprints bind source-stable row evidence; bounded catalog metadata gates comparability separately. See [architecture](docs/ARCHITECTURE.md) and [network configuration](docs/NETWORK.md).
 
-The React frontend (`frontend/`) has one shared, bounded read client and wallet-bound write clients. It journals submitted transaction hashes and prevents duplicate submission. After a timeout or reload, it continues verification of the saved transaction. It reports success only after terminal finality, semantic execution classification, and method-specific authoritative readback; uncertainty remains visible and retry is withheld until reconciliation. [RPC limits and planned measurements](docs/RPC-BUDGET.md) cover each critical journey.
+The React frontend (`frontend/`) has one shared, bounded read client and wallet-bound write clients. It journals submitted transaction hashes and prevents duplicate submission. After a timeout or reload, it continues verification of the saved transaction. It reports success only after terminal finality, semantic execution classification, and method-specific authoritative readback; uncertainty remains visible and retry is withheld until reconciliation.
 
 ## Run and verify locally
 
@@ -53,6 +53,6 @@ At the reviewed source revision, contract tests passed 54/54, GenVM lint/schema 
 
 Studio Dev uses RPC `https://studio-dev.genlayer.com/api` and chain ID `61997`. The deployed 56,832-byte contract was read back byte-equal to the public Git source at commit `4c31319`, with SHA-256 `6C47353E90347AF9C7B3AACD37CD2E9371FBE6D8532CF48843F26646CB665646`. The upgrader is the recorded deployer; if that authority is lost, an upgrade cannot be claimed. A Studio chain reset requires redeployment and renewed live verification. See [verification](docs/VERIFICATION.md).
 
-The contract is limited to two BLS CPI series, monthly periods, five vintages per trigger, and the Studio Dev network. Studio Dev is a testing environment. The public Vercel deployment is available, but its wallet/RPC E2E measurements remain pending and are not represented by the Studio result.
+The contract is limited to two BLS CPI series, monthly periods, five vintages per trigger, and the Studio Dev network. Studio Dev is a testing environment; the browser-wallet lifecycle is separately documented in [verification](docs/VERIFICATION.md).
 
 No private key belongs in this repository or the browser app. The frontend's RPC and contract address are public configuration; write authority comes only from the selected user's wallet. Source content is untrusted input to validators, and malformed, ambiguous, or unavailable evidence fails closed.

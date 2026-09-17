@@ -9,3 +9,7 @@ artifacts/
 .env.*
 !.env.example
 docs/preflight/
+docs/RPC-BUDGET.md
+docs/SOURCE-VERIFICATION-REUSE-MAP.md
+docs/FRONTEND-DESIGN-RATIONALE.md
+docs/evidence/
