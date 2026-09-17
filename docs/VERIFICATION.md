@@ -41,7 +41,11 @@ npm run typecheck
 npm run build
 ```
 
-At the reviewed source: contract tests `54/54`; lint/schema and exact 17-method validation PASS; frontend tests `53/53`, typecheck and production build PASS. The production dependency audit reports zero known vulnerabilities. `tests/test_live_bls_read.py` is opt-in and is not counted as Studio E2E. The [public Vercel deployment](https://civora-gules.vercel.app) is available and returns HTTP 200; browser-wallet E2E and measured frontend RPC evidence are not yet available, so [RPC-BUDGET.md](RPC-BUDGET.md) still contains pre-release bounds rather than post-release measurements.
+At the reviewed source: contract tests `54/54`; lint/schema and exact 17-method validation PASS; frontend tests `53/53`, typecheck and production build PASS. The production dependency audit reports zero known vulnerabilities. `tests/test_live_bls_read.py` is opt-in and is not counted as Studio E2E. The [public Vercel deployment](https://civora-gules.vercel.app) is available and returns HTTP 200.
+
+## External-wallet Vercel E2E
+
+The [Chrome/OKX E2E ledger](evidence/vercel-e2e-4458a1f.json) records the production application revision `4458a1f5e2b16813255007c5c3f58dac984149d9`, deployment `dpl_7ujUhmGzCZqw9KhyBtEs3o2UNXXV`, all five browser-wallet transaction hashes, case results VE-01–VE-07, and direct contract readbacks. All five transactions independently returned `FINALIZED`, `FINISHED_WITH_RETURN`, leader `SUCCESS` and `MAJORITY_AGREE`. The created `trg-0002` has one comparable vintage; unchanged revalidation advanced the observation timestamp without appending another. Consumer binding `civora-vercel` resolves to `trg-0002` when queried with the sender's checksum-cased address. The final binding hash was recovered to browser `SUCCESS` after the frontend address-case fix, without resubmission. Frontend per-method RPC counts were not captured during this run, so the distinct [RPC budget evidence](RPC-BUDGET.md) remains incomplete; this ledger does not claim that gate passed.
 
 ## Recovery and limitations
 
