@@ -4,12 +4,14 @@ import { rpcClient } from '../services/rpcClient';
 import { ConnectedWallet } from '../types';
 import { setTestConfig } from '../config';
 
-const { mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient } = vi.hoisted(() => {
+const { mockDedicatedEstimateFees, mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient } = vi.hoisted(() => {
+  const mockDedicatedEstimateFees = vi.fn();
   const mockDedicatedWriteContract = vi.fn();
   const mockSharedWriteContract = vi.fn();
   const mockCreateClient = vi.fn((opts?: any) => {
     if (opts?.account) {
       return {
+        estimateTransactionFeesForWrite: mockDedicatedEstimateFees,
         writeContract: mockDedicatedWriteContract,
         readContract: vi.fn(),
         getTransaction: vi.fn(),
@@ -21,7 +23,7 @@ const { mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient } 
       getTransaction: vi.fn(),
     };
   });
-  return { mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient };
+  return { mockDedicatedEstimateFees, mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient };
 });
 
 vi.mock('genlayer-js', () => {
@@ -81,6 +83,12 @@ describe('WriteManager (Routing, Fail-Closed Storage, Receipt Classifier & Readb
 
     mockDedicatedWriteContract.mockReset();
     mockDedicatedWriteContract.mockResolvedValue('0xded_tx_hash_123');
+    mockDedicatedEstimateFees.mockReset();
+    mockDedicatedEstimateFees.mockResolvedValue({
+      distribution: { appealRounds: 0n },
+      messageAllocations: [],
+      feeValue: 1n,
+    });
 
     mockSharedWriteContract.mockReset();
     mockSharedWriteContract.mockResolvedValue('0xshared_tx_hash_456');
@@ -130,16 +138,44 @@ describe('WriteManager (Routing, Fail-Closed Storage, Receipt Classifier & Readb
       );
 
       // Verify dedicated write contract was called with exact method and args
-      expect(mockDedicatedWriteContract).toHaveBeenCalledWith({
+      expect(mockDedicatedEstimateFees).toHaveBeenCalledWith({
         address: '0x8888888888888888888888888888888888888888',
         functionName: 'create_trigger',
         args: ['nonce-1', 'CUSR0000SA0', '2024', 'M05', 'GE', '314.069'],
         value: 0n,
       });
+      expect(mockDedicatedWriteContract).toHaveBeenCalledWith({
+        address: '0x8888888888888888888888888888888888888888',
+        functionName: 'create_trigger',
+        args: ['nonce-1', 'CUSR0000SA0', '2024', 'M05', 'GE', '314.069'],
+        value: 0n,
+        fees: {
+          distribution: { appealRounds: 0n },
+          messageAllocations: [],
+          feeValue: 1n,
+        },
+      });
 
       // Strict verification: shared read client writeContract call ledger MUST remain strictly 0
       expect(sharedWriteSpy).toHaveBeenCalledTimes(0);
       expect(mockSharedWriteContract).toHaveBeenCalledTimes(0);
+    });
+
+    it('fails before wallet submission when the current fee quote cannot be obtained', async () => {
+      mockDedicatedEstimateFees.mockRejectedValueOnce(new Error('fee quote unavailable'));
+
+      await expect(writeMgr.executeWrite(
+        mockOKXWallet,
+        'create_trigger',
+        ['nonce-fee-fail', 'CUSR0000SA0', '2024', 'M05', 'GE', '314.069'],
+        vi.fn(),
+      )).resolves.toMatchObject({
+        success: false,
+        recoverable: false,
+        error: 'fee quote unavailable',
+      });
+
+      expect(mockDedicatedWriteContract).not.toHaveBeenCalled();
     });
   });
 

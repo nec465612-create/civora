@@ -390,12 +390,24 @@ export class WriteManager {
         account: wallet.address as `0x${string}`,
       });
 
+      const feeEstimate = await writeClient.estimateTransactionFeesForWrite({
+        address: appConfig.contractAddress as `0x${string}`,
+        functionName: method,
+        args: args as any,
+        value: 0n,
+      });
+
       // Submit transaction exclusively via dedicated write client
       const hash = await writeClient.writeContract({
         address: appConfig.contractAddress as `0x${string}`,
         functionName: method,
         args: args as any,
         value: 0n,
+        fees: {
+          distribution: feeEstimate.distribution,
+          messageAllocations: feeEstimate.messageAllocations,
+          feeValue: feeEstimate.feeValue,
+        },
       });
 
       this.currentHash = hash;

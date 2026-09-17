@@ -47,7 +47,7 @@ npm run build
 npm run dev
 ```
 
-At the reviewed source revision, contract tests passed 54/54, GenVM lint/schema passed, and frontend tests passed 50/50 with clean typecheck/build. The opt-in live BLS read test is separate from the six completed Studio transactions. Exact commands, source parity, transaction hashes, and readbacks are in [verification](docs/VERIFICATION.md).
+At the reviewed source revision, contract tests passed 54/54, GenVM lint/schema passed, and frontend tests passed 51/51 with clean typecheck/build. The opt-in live BLS read test is separate from the six completed Studio transactions. Exact commands, source parity, transaction hashes, and readbacks are in [verification](docs/VERIFICATION.md).
 
 ## Deployment, recovery, and limitations
 
