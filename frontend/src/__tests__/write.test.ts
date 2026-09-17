@@ -3,6 +3,7 @@ import { WriteManager } from '../services/writeManager';
 import { rpcClient } from '../services/rpcClient';
 import { ConnectedWallet } from '../types';
 import { setTestConfig } from '../config';
+import { getAddress } from 'viem';
 
 const { mockDedicatedEstimateFees, mockDedicatedWriteContract, mockSharedWriteContract, mockCreateClient } = vi.hoisted(() => {
   const mockDedicatedEstimateFees = vi.fn();
@@ -504,6 +505,30 @@ describe('WriteManager (Routing, Fail-Closed Storage, Receipt Classifier & Readb
       expect(writeMgr.getStage()).toBe('SUCCESS');
       expect(invalidate).toHaveBeenCalledOnce();
       expect(JSON.parse(mockStorage['ostr_tx_journal_v1'])[0].status).toBe('RECONCILED');
+      expect(mockDedicatedWriteContract).not.toHaveBeenCalled();
+    });
+
+    it('recovers consumer binding using the checksum-cased sender storage key', async () => {
+      const account = '0xe8d6c55838c39301c11d54fc9a38b9de298329f6';
+      const namespace = 'civora-vercel';
+      mockStorage['ostr_tx_journal_v1'] = JSON.stringify([{
+        intentId: 'recover-binding', account, chainId: 61997,
+        contractAddress: '0x8888888888888888888888888888888888888888', method: 'bind_consumer',
+        args: [namespace, 'trg-0002'], createdAt: Date.now(), hash: '0xbindinghash', status: 'PENDING',
+      }]);
+      vi.spyOn(rpcClient.getRawClient(), 'getTransaction').mockResolvedValue({
+        statusName: 'FINALIZED', txExecutionResultName: 'FINISHED_WITH_RETURN',
+      } as any);
+      const read = vi.spyOn(rpcClient, 'readContract').mockImplementation(async (_method, args) => {
+        if (args?.[0] !== getAddress(account)) throw new Error('Consumer binding not found');
+        return 'trg-0002' as any;
+      });
+
+      const result = await writeMgr.continueVerification();
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe('trg-0002');
+      expect(read).toHaveBeenCalledWith('get_consumer_binding', [getAddress(account), namespace], true);
       expect(mockDedicatedWriteContract).not.toHaveBeenCalled();
     });
 

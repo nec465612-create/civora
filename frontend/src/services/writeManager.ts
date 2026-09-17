@@ -1,5 +1,6 @@
 import { createClient } from 'genlayer-js';
 import { studioDevnet } from 'genlayer-js/chains';
+import { getAddress } from 'viem';
 import { ConnectedWallet, TxIntent, TxJournalEntry, TxStage, WriteResult } from '../types';
 import { appConfig } from '../config';
 import { rpcClient } from './rpcClient';
@@ -202,7 +203,8 @@ export class WriteManager {
     if (entry.method === 'bind_consumer') {
       const namespace = String(entry.args[0] ?? '');
       const expectedTrigger = String(entry.args[1] ?? '');
-      const bound = await rpcClient.readContract<string>('get_consumer_binding', [entry.account, namespace], true);
+      // Contract storage keys use GenVM's checksum-cased sender string.
+      const bound = await rpcClient.readContract<string>('get_consumer_binding', [getAddress(entry.account), namespace], true);
       if (bound !== expectedTrigger) throw new Error('Authoritative consumer binding does not match the saved intent.');
       return bound;
     }
