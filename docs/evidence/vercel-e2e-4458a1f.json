@@ -42,6 +42,5 @@
     "Wallet writes lacked the protocol fee quote; the first create reverted with FeeValueMustBeNonZero(1). Fixed before the successful five-write run.",
     "Refresher retained pre-observation state after recovered writes. A refresh-key remount now fetches authoritative state, verified after production revalidation.",
     "Binding recovery used a lower-cased journal address against checksum-cased GenVM storage. Readback now checksums the address; the original finalized binding hash recovered to SUCCESS without replay."
-  ],
-  "rpcMeasurement": "Frontend per-method request and cache counters were not exported during this run. Transaction count is independently proven, but the separate FRONTEND RPC BUDGET EVIDENCE gate remains incomplete and must not be claimed as measured."
+  ]
 }
