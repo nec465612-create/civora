@@ -147,6 +147,11 @@ describe('ABI Alignment & Prohibited Claims Scanner', () => {
     expect(app).toContain('key={`${selectedTriggerId}-${refreshCounter}`}');
   });
 
+  it('reloads the refresher readback after a recovered transaction succeeds', () => {
+    const app = fs.readFileSync(path.resolve(process.cwd(), 'src/App.tsx'), 'utf-8');
+    expect(app).toContain("key={`${selectedTriggerId ?? 'none'}-${refreshCounter}`}");
+  });
+
   it('keeps the public layer judge-readable without wallet or debug telemetry', () => {
     const landing = fs.readFileSync(path.resolve(process.cwd(), 'src/components/LandingPage.tsx'), 'utf-8');
     const header = fs.readFileSync(path.resolve(process.cwd(), 'src/components/Header.tsx'), 'utf-8');

@@ -134,6 +134,7 @@ export const App: React.FC = () => {
 
         {activeTab === 'refresher' && (
           <Refresher
+            key={`${selectedTriggerId ?? 'none'}-${refreshCounter}`}
             selectedTriggerId={selectedTriggerId}
             onRevalidated={(id) => {
               setSelectedTriggerId(id);

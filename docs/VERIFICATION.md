@@ -41,7 +41,7 @@ npm run typecheck
 npm run build
 ```
 
-At the reviewed source: contract tests `54/54`; lint/schema and exact 17-method validation PASS; frontend tests `51/51`, typecheck and production build PASS. The production dependency audit reports zero known vulnerabilities. `tests/test_live_bls_read.py` is opt-in and is not counted as Studio E2E. The [public Vercel deployment](https://civora-gules.vercel.app) is available and returns HTTP 200; browser-wallet E2E and measured frontend RPC evidence are not yet available, so [RPC-BUDGET.md](RPC-BUDGET.md) still contains pre-release bounds rather than post-release measurements.
+At the reviewed source: contract tests `54/54`; lint/schema and exact 17-method validation PASS; frontend tests `52/52`, typecheck and production build PASS. The production dependency audit reports zero known vulnerabilities. `tests/test_live_bls_read.py` is opt-in and is not counted as Studio E2E. The [public Vercel deployment](https://civora-gules.vercel.app) is available and returns HTTP 200; browser-wallet E2E and measured frontend RPC evidence are not yet available, so [RPC-BUDGET.md](RPC-BUDGET.md) still contains pre-release bounds rather than post-release measurements.
 
 ## Recovery and limitations
 
